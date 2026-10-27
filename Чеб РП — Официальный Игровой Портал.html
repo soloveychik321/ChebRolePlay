@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЧЕБ РП — Официальный Игровой Портал</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        crest: ['Cinzel', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            base: '#090a10',
+                            panel: '#10131d',
+                            card: '#161b29',
+                            border: '#232b40',
+                            hover: '#29334c'
+                        },
+                        gold: {
+                            400: '#f6d365',
+                            500: '#e5b33d',
+                            600: '#c59528',
+                            glow: 'rgba(229, 179, 61, 0.35)'
+                        },
+                        cop: {
+                            blue: '#1d4ed8',
+                            glow: 'rgba(37, 99, 235, 0.35)'
+                        },
+                        gang: {
+                            crimson: '#b91c1c',
+                            glow: 'rgba(220, 38, 38, 0.35)'
+                        }
+                    },
+                    boxShadow: {
+                        'gold-glow': '0 0 25px -4px rgba(229, 179, 61, 0.3)',
+                        'cop-glow': '0 0 25px -4px rgba(37, 99, 235, 0.35)',
+                        'gang-glow': '0 0 25px -4px rgba(220, 38, 38, 0.35)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #090a10;
+            color: #d1d5db;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(229, 179, 61, 0.08), transparent 70%),
+                radial-gradient(ellipse 60% 40% at 10% 90%, rgba(37, 99, 235, 0.06), transparent 60%),
+                radial-gradient(ellipse 60% 40% at 90% 90%, rgba(185, 28, 28, 0.06), transparent 60%);
+            background-attachment: fixed;
+        }
+
+        .crest-border {
+            border: 1px solid rgba(229, 179, 61, 0.25);
+            background: linear-gradient(145deg, rgba(22, 27, 41, 0.85), rgba(16, 19, 29, 0.95));
+            backdrop-filter: blur(12px);
+        }
+
+        .crest-border:hover {
+            border-color: rgba(229, 179, 61, 0.45);
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #fff7d6 0%, #f6d365 40%, #c59528 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-border-gradient {
+            border-image: linear-gradient(to right, #f6d365, #c59528, transparent) 1;
+        }
+
+        /* Subtle scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #090a10; }
+        ::-webkit-scrollbar-thumb { background: #232b40; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c59528; }
+
+        .tab-view { display: none; }
+        .tab-view.active { display: block; animation: fadeSlide 0.25s ease-out; }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-gold-500 selection:text-black">
+
+    <!-- Global Toast Container -->
+    <div id="toast-box" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Admin Authentication Modal Overlay -->
+    <div id="admin-login-modal" class="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="crest-border max-w-sm w-full p-6 sm:p-7 rounded-3xl text-center space-y-5 shadow-2xl relative">
+            <button onclick="closeAdminLoginModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-dark-panel hover:bg-dark-hover text-gray-400 hover:text-white flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+            <div class="w-14 h-14 rounded-2xl bg-gold-500/15 border border-gold-500/40 text-gold-400 mx-auto flex items-center justify-center text-2xl shadow-gold-glow">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-crest font-bold text-white tracking-wide">Панель Управления</h3>
+                <p class="text-xs text-gray-400 font-mono mt-1">Введите пароль администратора Чеб РП</p>
+            </div>
+            <form onsubmit="submitAdminPassword(event)" class="space-y-3.5">
+                <div class="relative">
+                    <input type="password" id="admin-modal-password-input" placeholder="Пароль доступа" autocomplete="current-password" class="w-full bg-dark-base border border-dark-border rounded-xl px-4 py-3 text-white text-center font-mono text-sm tracking-widest focus:outline-none focus:border-gold-500 transition-colors">
+                </div>
+                <div id="admin-login-error" class="text-xs font-mono text-red-400 hidden flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>Неверный пароль доступа!</span>
+                </div>
+                <div class="flex gap-2.5 pt-1">
+                    <button type="button" onclick="closeAdminLoginModal()" class="w-1/2 py-2.5 rounded-xl bg-dark-card hover:bg-dark-hover text-xs font-mono text-gray-300 transition-colors">Отмена</button>
+                    <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-400 text-black text-xs font-mono font-bold shadow-gold-glow transition-all">Войти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Generic Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="crest-border max-w-sm w-full p-6 rounded-2xl text-center space-y-4 shadow-2xl">
+            <div class="w-12 h-12 rounded-xl bg-gang-crimson/20 text-red-400 mx-auto flex items-center justify-center text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h4 class="text-base font-bold text-white" id="confirm-title">Подтверждение</h4>
+            <p class="text-xs text-gray-400 font-mono" id="confirm-desc">Вы уверены?</p>
+            <div class="flex gap-2.5 pt-2">
+                <button onclick="resolveConfirm(false)" class="w-1/2 py-2.5 rounded-xl bg-dark-card hover:bg-dark-hover text-xs font-semibold text-gray-300 transition-colors">Отмена</button>
+                <button onclick="resolveConfirm(true)" class="w-1/2 py-2.5 rounded-xl bg-gang-crimson hover:bg-red-700 text-xs font-bold text-white transition-colors shadow-gang-glow">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 bg-dark-base/90 backdrop-blur-md border-b border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo & Project Identity -->
+                <a href="javascript:void(0)" onclick="openTab('main')" class="flex items-center gap-3.5 group">
+                    <div id="header-avatar-box" class="relative w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-gold-600 via-gold-400 to-amber-200 shadow-gold-glow flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105">
+                        <!-- Dynamic Crest SVG / Avatar Image -->
+                        <img id="nav-avatar-img" src="" alt="Чеб РП" class="w-full h-full object-cover rounded-full hidden" onerror="showDefaultCrest()">
+                        <div id="nav-avatar-fallback" class="w-full h-full rounded-full bg-dark-card flex items-center justify-center p-2 text-gold-400">
+                            <!-- Detailed Cheboksary Heraldic Shield SVG -->
+                            <svg viewBox="0 0 100 100" class="w-full h-full fill-current">
+                                <path d="M50 8 L54 18 L64 16 L61 25 L70 28 L63 35 L70 41 L59 44 L60 52 L50 47 L40 52 L41 44 L30 41 L37 35 L30 28 L39 25 L36 16 L46 18 Z" fill="#e5b33d"/>
+                                <path d="M22 40 Q50 36 78 40 L76 68 Q75 90 50 96 Q25 90 24 68 Z" fill="#161b29" stroke="#e5b33d" stroke-width="3"/>
+                                <path d="M35 52 Q44 48 48 55 Q42 58 35 52 Z" fill="#f6d365"/>
+                                <path d="M65 52 Q56 48 52 55 Q58 58 65 52 Z" fill="#f6d365"/>
+                                <path d="M50 64 Q58 60 62 67 Q56 70 50 64 Z" fill="#f6d365"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-crest font-extrabold text-lg sm:text-xl tracking-wider text-white">ЧЕБ <span class="gold-gradient-text">РП</span></span>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 font-bold">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> СЕРВЕР ОНЛАЙН
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-gray-400 font-mono">Ролевой проект в Roblox</p>
+                    </div>
+                </a>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex items-center gap-1.5 bg-dark-panel p-1.5 rounded-2xl border border-dark-border">
+                    <button onclick="openTab('main')" id="btn-tab-main" class="px-4 py-2 rounded-xl text-xs font-mono font-semibold transition-all flex items-center gap-2 text-white bg-dark-card border border-gold-500/30 shadow-sm">
+                        <i class="fa-solid fa-compass text-gold-400"></i> Главная
+                    </button>
+                    <button onclick="openTab('bugs')" id="btn-tab-bugs" class="px-4 py-2 rounded-xl text-xs font-mono font-semibold transition-all flex items-center gap-2 text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-bug text-red-400"></i> Баги & Идеи
+                        <span id="nav-bugs-badge" class="px-1.5 py-0.2 rounded-full bg-red-500/20 text-red-400 text-[10px] font-bold">0</span>
+                    </button>
+                    <button onclick="openAdminPortal()" id="btn-tab-admin" class="px-4 py-2 rounded-xl text-xs font-mono font-semibold transition-all flex items-center gap-2 text-gray-400 hover:text-gold-400">
+                        <i class="fa-solid fa-key"></i> Панель управления
+                    </button>
+                </nav>
+
+                <!-- Header Action: Play in Roblox -->
+                <div class="flex items-center gap-2.5">
+                    <a id="header-play-link" href="https://www.roblox.com" target="_blank" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-400 hover:to-amber-400 text-black text-xs font-mono font-extrabold transition-all transform hover:scale-[1.02] shadow-gold-glow flex items-center gap-2">
+                        <i class="fa-solid fa-play text-xs"></i> <span>Играть</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile sub-navigation bar -->
+        <div class="flex md:hidden overflow-x-auto py-2.5 px-4 border-t border-dark-border bg-dark-panel/95 gap-2 text-xs font-mono">
+            <button onclick="openTab('main')" class="mob-tab-btn active px-3.5 py-1.5 rounded-lg bg-dark-card text-white border border-gold-500/30 whitespace-nowrap">Главная</button>
+            <button onclick="openTab('bugs')" class="mob-tab-btn px-3.5 py-1.5 rounded-lg text-gray-400 whitespace-nowrap">Баги & Идеи</button>
+            <button onclick="openAdminPortal()" class="mob-tab-btn px-3.5 py-1.5 rounded-lg text-gray-400 whitespace-nowrap">Панель управления</button>
+        </div>
+    </header>
+
+
+    <!-- MAIN CONTENT ROUTER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- ================= 1. TAB: MAIN PORTAL ================= -->
+        <div id="view-main" class="tab-view active space-y-12">
+
+            <!-- Hero Section -->
+            <section class="relative overflow-hidden rounded-3xl crest-border p-6 sm:p-10 lg:p-12 text-center lg:text-left flex flex-col lg:flex-row items-center justify-between gap-8">
+                <!-- Background visual accents -->
+                <div class="absolute -right-20 -top-20 w-80 h-80 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-cop-blue/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="space-y-4 max-w-2xl relative z-10">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-400 text-xs font-mono">
+                        <i class="fa-solid fa-shield-halved"></i> Официальный Сервер Проекта
+                    </div>
+                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-crest font-extrabold text-white leading-tight tracking-wide">
+                        АТМОСФЕРА <span class="gold-gradient-text block sm:inline">ЧЕБОКСАР</span> В ROBLOX
+                    </h1>
+                    <p class="text-sm sm:text-base text-gray-300 font-sans max-w-xl leading-relaxed">
+                        Погрузись в детально воссозданный город, реальные улицы, службу в МВД и теневой мир криминальных группировок. Выбери свою сторону и начни свой путь.
+                    </p>
+                    <div class="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
+                        <a id="hero-play-link" href="https://www.roblox.com" target="_blank" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-400 hover:to-amber-400 text-black text-sm font-mono font-bold transition-all transform hover:-translate-y-0.5 shadow-gold-glow flex items-center gap-2.5">
+                            <i class="fa-solid fa-gamepad text-base"></i> Зайти на Сервер
+                        </a>
+                        <button onclick="scrollToUpdates()" class="px-6 py-3.5 rounded-xl bg-dark-card hover:bg-dark-hover border border-dark-border text-gray-300 text-sm font-mono font-semibold transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-gold-400"></i> Обновления
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Big Embellished Crest Display -->
+                <div class="relative z-10 flex-shrink-0">
+                    <div class="relative w-44 h-44 sm:w-56 sm:h-56 rounded-full p-1 bg-gradient-to-b from-gold-400 via-gold-600 to-dark-card shadow-gold-glow flex items-center justify-center overflow-hidden">
+                        <img id="hero-crest-img" src="" alt="Герб Чеб РП" class="w-full h-full object-cover rounded-full hidden" onerror="showDefaultCrest()">
+                        <div id="hero-crest-fallback" class="w-full h-full rounded-full bg-dark-panel flex items-center justify-center p-6 text-gold-400">
+                            <!-- Cheboksary Central Medallion SVG -->
+                            <svg viewBox="0 0 100 100" class="w-full h-full fill-current">
+                                <circle cx="50" cy="50" r="46" fill="none" stroke="#e5b33d" stroke-width="2" stroke-dasharray="2 4"/>
+                                <path d="M50 10 L55 22 L67 20 L63 30 L74 34 L66 42 L73 50 L61 53 L62 62 L50 56 L38 62 L39 53 L27 50 L34 42 L26 34 L37 30 L33 20 L45 22 Z" fill="#f6d365"/>
+                                <path d="M25 45 Q50 42 75 45 L73 70 Q72 88 50 94 Q28 88 27 70 Z" fill="#10131d" stroke="#e5b33d" stroke-width="3"/>
+                                <polygon points="50,45 74,70 50,85 26,70" fill="rgba(229, 179, 61, 0.15)"/>
+                                <path d="M36 56 Q44 52 48 59 Q42 62 36 56 Z" fill="#ffffff"/>
+                                <path d="M64 56 Q56 52 52 59 Q58 62 64 56 Z" fill="#ffffff"/>
+                                <path d="M50 68 Q57 64 61 71 Q55 74 50 68 Z" fill="#ffffff"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- SECTION: СВЕЖИЕ ОБНОВЛЕНИЯ (Directly below hero) -->
+            <section id="updates-section" class="space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-dark-border pb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-gold-400 animate-pulse"></span>
+                            <h2 class="text-xl sm:text-2xl font-crest font-bold text-white tracking-wide uppercase">Свежие Обновления</h2>
+                        </div>
+                        <p class="text-xs text-gray-400 font-mono mt-0.5">Список последних изменений, правок и нововведений в игре</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="openAdminPortal()" class="px-3.5 py-2 rounded-xl bg-dark-card hover:bg-dark-hover border border-dark-border text-xs font-mono text-gold-400 transition-colors flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Опубликовать патч
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Updates Feed -->
+                <div id="patches-container" class="space-y-4">
+                    <!-- Patches or clean placeholder will render here -->
+                </div>
+            </section>
+
+
+            <!-- SECTION: ФРАКЦИИ ПРОЕКТА -->
+            <section class="space-y-6">
+                <div class="border-b border-dark-border pb-4">
+                    <h2 class="text-xl sm:text-2xl font-crest font-bold text-white tracking-wide uppercase">Фракции Проекта</h2>
+                    <p class="text-xs text-gray-400 font-mono mt-0.5">Две стороны одной монеты: выбери закон или власть улиц</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- Faction 1: МВД / Полиция -->
+                    <div class="relative overflow-hidden rounded-3xl bg-dark-card/90 border border-blue-900/40 p-6 sm:p-8 flex flex-col justify-between space-y-6 group hover:border-blue-500/50 transition-all duration-300 hover:shadow-cop-glow">
+                        <div class="absolute -right-12 -top-12 w-44 h-44 bg-blue-600/10 rounded-full blur-2xl group-hover:bg-blue-600/20 transition-all"></div>
+                        
+                        <div class="space-y-4 relative z-10">
+                            <div class="flex items-center justify-between">
+                                <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30 flex items-center gap-2">
+                                    <i class="fa-solid fa-shield"></i> Государственная служба
+                                </span>
+                                <span class="text-xs font-mono text-gray-500">Правопорядок</span>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl bg-blue-950/80 border border-blue-600/40 flex items-center justify-center text-blue-400 text-2xl shadow-cop-glow flex-shrink-0">
+                                    <i class="fa-solid fa-building-shield"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl sm:text-2xl font-crest font-bold text-white tracking-wide">МВД / Полиция</h3>
+                                    <p class="text-xs font-mono text-blue-300">Управление Министерства Внутренних Дел</p>
+                                </div>
+                            </div>
+
+                            <p class="text-xs sm:text-sm text-gray-300 leading-relaxed font-sans">
+                                Поддержание закона, патрулирование дорог и улиц города, задержание нарушителей, расследование преступлений и рейды на криминальные схроны.
+                            </p>
+
+                            <!-- Features checklist -->
+                            <div class="grid grid-cols-2 gap-2 text-xs font-mono text-gray-400 pt-1">
+                                <div class="flex items-center gap-1.5"><i class="fa-solid fa-check text-blue-400"></i> Патрули и мигалки</div>
+                                <div class="flex items-center gap-1.5"><i class="fa-solid fa-check text-blue-400"></i> Оружие и спецсредства</div>
+                                <div class="flex items-center gap-1.5"><i class="fa-solid fa-check text-blue-400"></i> Планшет розыска</div>
+                                <div class="flex items-center gap-1.5"><i class="fa-solid fa-check text-blue-400"></i> Система званий</div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 relative z-10">
+                            <a id="btn-police-link" href="https://discord.com" target="_blank" class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-cop-glow">
+                                <span id="label-police-link">Спецсвязь Полиции (Вступить)</span> <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Faction 2: Братва / Криминал -->
+                    <div class="relative overflow-hidden rounded-3xl bg-dark-card/90 border border-red-950/40 p-6 sm:p-8 flex flex-col justify-between space-y-6 group hover:border-red-600/50 transition-all duration-300 hover:shadow-gang-glow">
+                        <div class="absolute -right-12 -top-12 w-44 h-44 bg-red-600/10 rounded-full blur-2xl group-hover:bg-red-600/20 transition-all"></div>
+                        
+                        <div class="space-y-4 relative z-10">
+                            <div class="flex items-center justify-between">
+                                <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-red-500/15 text-red-400 border border-red-500/30 flex items-center gap-2">
+                                    <i class="fa-solid fa-skull"></i> Теневая власть
+                                </span>
+                                <span class="text-xs font-mono text-gray-500">Криминал</span>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl bg-red-950/80 border border-red-600/40 flex items-center justify-center text-red-400 text-2xl shadow-gang-glow flex-shrink-0">
+                                    <i class="fa-solid fa-mask"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl sm:text-2xl font-crest font-bold text-white tracking-wide">Братва / Бандиты</h3>
+                                    <p class="text-xs font-mono text-red-400">Авторитеты и уличные группировки</p>
+                                </div>
+                            </div>
+
+                            <p class="text-xs sm:text-sm text-gray-300 leading-relaxed font-sans">
+                                Контроль районов, нелегальный сбыт, сходки на гаражах, дерзкие погони и крышевание коммерческих точек. Здесь решают понятия и сила.
+                            </p>
+
+                            <!-- Features checklist -->
+                            <div class="grid grid-cols-2 gap-2 text-xs font-mono text-gray-400 pt-1">
+                                <div class="flex items-center gap-1.5"><i class="fa-solid fa-check text-red-400"></i> Захват территорий</div>
+                                <div class="flex items-center gap-1.5"><i class="fa-solid fa-check text-red-400"></i> Черный рынок оружия</div>
+                                <div class="flex items-center gap-1.5"><i class="fa-solid fa-check text-red-400"></i> Ограбления магазинов</div>
+                                <div class="flex items-center gap-1.5"><i class="fa-solid fa-check text-red-400"></i> Воровской авторитет</div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 relative z-10">
+                            <a id="btn-gang-link" href="https://discord.com" target="_blank" class="w-full py-3.5 rounded-xl bg-red-700 hover:bg-red-600 text-white font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-gang-glow">
+                                <span id="label-gang-link">Связь с Братвой (Вступить)</span> <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+
+        <!-- ================= 2. TAB: BUGS & IDEAS REPOSITORY ================= -->
+        <div id="view-bugs" class="tab-view space-y-8">
+            <div class="border-b border-dark-border pb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-crest font-bold text-white tracking-wide uppercase">Баги и Предложения</h2>
+                    <p class="text-xs text-gray-400 font-mono mt-0.5">Помоги сделать Чеб РП лучше. Все заявки попадают напрямую разработчикам</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Report Form -->
+                <div class="lg:col-span-5 crest-border p-6 rounded-3xl space-y-4">
+                    <h3 class="text-sm font-mono font-bold uppercase text-white flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane text-gold-400"></i> Сообщить об ошибке или идее
+                    </h3>
+
+                    <form id="public-bug-form" onsubmit="handlePublicBugSubmit(event)" class="space-y-4 font-mono text-xs">
+                        <div>
+                            <label class="block text-gray-400 mb-1">Твой никнейм в Roblox *</label>
+                            <input type="text" id="pbug-nick" required placeholder="Напр.: Cheb_Player21" class="w-full bg-dark-base border border-dark-border rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-gold-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-400 mb-1">Категория обращения *</label>
+                            <select id="pbug-category" class="w-full bg-dark-base border border-dark-border rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-gold-500">
+                                <option value="Критический баг">🔴 Критический баг (Дюп / Краш)</option>
+                                <option value="Ошибка карты">🗺️ Ошибка карты / Текстуры</option>
+                                <option value="Предложение по скриптам">⚡ Предложение по скриптам / Механикам</option>
+                                <option value="Идея для автопарка">🚗 Идея для автопарка / Тюнинга</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-400 mb-1">Суть проблемы или идеи *</label>
+                            <input type="text" id="pbug-title" required placeholder="Краткий заголовок" class="w-full bg-dark-base border border-dark-border rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-gold-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-400 mb-1">Подробное описание / шаги воспроизведения *</label>
+                            <textarea id="pbug-desc" rows="4" required placeholder="Опиши, что именно случилось или как должна работать новая фича..." class="w-full bg-dark-base border border-dark-border rounded-xl p-3.5 text-white focus:outline-none focus:border-gold-500 resize-none"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-400 hover:to-amber-400 text-black font-mono font-bold transition-all shadow-gold-glow flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-check"></i> Отправить разработчикам
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Feed of Community Reports -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono text-gray-400">Опубликованные обращения: <strong id="bugs-stat-count" class="text-white">0</strong></span>
+                        <div class="text-[11px] font-mono text-gray-500">Статусы обновляются администрацией</div>
+                    </div>
+
+                    <div id="public-bugs-list" class="space-y-3 max-h-[680px] overflow-y-auto pr-1">
+                        <!-- Dynamic items -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- ================= 3. TAB: SECURE ADMIN CONTROL PANEL ================= -->
+        <div id="view-admin" class="tab-view space-y-8">
+            
+            <!-- Admin Header -->
+            <div class="crest-border p-6 rounded-3xl flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-gold-500/20 border border-gold-500/40 flex items-center justify-center text-gold-400 text-lg">
+                        <i class="fa-solid fa-lock-open"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-crest font-bold text-white tracking-wide">Панель Управления Чеб РП</h2>
+                        <p class="text-xs font-mono text-emerald-400">Авторизация подтверждена (Root Admin)</p>
+                    </div>
+                </div>
+
+                <button onclick="adminLogout()" class="px-4 py-2 rounded-xl bg-dark-card hover:bg-dark-hover border border-dark-border text-xs font-mono text-red-400 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i> Выйти из панели
+                </button>
+            </div>
+
+            <!-- Admin Sub-Navigation Sections -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left Column: Add Patch & Discord Formatter -->
+                <div class="lg:col-span-7 space-y-8">
+                    
+                    <!-- 1. Add New Patch Box -->
+                    <div class="crest-border p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-dark-border pb-3">
+                            <h3 class="text-sm font-mono font-bold text-white uppercase flex items-center gap-2">
+                                <i class="fa-solid fa-feather-pointed text-gold-400"></i> Создать новый патч
+                            </h3>
+                            <span class="text-[11px] font-mono text-gray-400">Появится на главной</span>
+                        </div>
+
+                        <form id="admin-patch-form" onsubmit="handleAdminPatchSubmit(event)" class="space-y-3.5 font-mono text-xs">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-gray-400 mb-1">Версия обновления *</label>
+                                    <input type="text" id="ap-version" required placeholder="Напр.: v1.2.0 — Зимний Чебоксары" class="w-full bg-dark-base border border-dark-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-400 mb-1">Категория / Тег *</label>
+                                    <select id="ap-tag" class="w-full bg-dark-base border border-dark-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                                        <option value="Геймплей">🎮 Геймплей</option>
+                                        <option value="Карта">🗺️ Новые районы / Карта</option>
+                                        <option value="МВД / Полиция">🚓 МВД / Полиция</option>
+                                        <option value="Криминал">🔪 Криминал / Братва</option>
+                                        <option value="Исправления">🛠️ Фиксы и Оптимизация</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-400 mb-1">Список изменений (каждый пункт с новой строки) *</label>
+                                <textarea id="ap-points" rows="5" required placeholder="Добавлена новая дежурная часть МВД&#10;Исправлен баг с провалом под мост&#10;Новая система заправки на АЗС" class="w-full bg-dark-base border border-dark-border rounded-xl p-3 text-white focus:outline-none focus:border-gold-500 resize-none leading-relaxed"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-gold-500 to-amber-500 hover:from-gold-400 text-black font-bold font-mono transition-all shadow-gold-glow flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Опубликовать на сайте
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 2. Discord / VK Announcement Drafter -->
+                    <div class="crest-border p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-dark-border pb-3">
+                            <h3 class="text-sm font-mono font-bold text-white uppercase flex items-center gap-2">
+                                <i class="fa-brands fa-discord text-indigo-400"></i> Генератор объявления для Discord
+                            </h3>
+                            <button onclick="copyAdminDiscordDraft()" class="px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600 border border-indigo-500/40 text-xs font-mono text-indigo-200 transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-copy"></i> Скопировать текст
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-400 font-mono">
+                            Выбери любой патч или напиши свой текст — приложение превратит его в готовый красивый пост с эмодзи и разделителями:
+                        </p>
+
+                        <div class="space-y-3 font-mono text-xs">
+                            <div>
+                                <label class="block text-gray-400 mb-1">Загрузить данные из патча:</label>
+                                <select id="discord-patch-select" onchange="loadPatchIntoDiscordDrafter()" class="w-full bg-dark-base border border-dark-border rounded-xl p-2.5 text-white focus:outline-none focus:border-indigo-500">
+                                    <option value="">-- Выберите патч для быстрой вставки --</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-400 mb-1">Текст анонса (Discord Markdown):</label>
+                                <textarea id="discord-draft-text" rows="7" oninput="updateDiscordLivePreview()" class="w-full bg-dark-base border border-dark-border rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500 font-mono text-xs leading-relaxed resize-none"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Live preview box -->
+                        <div class="bg-dark-base border border-dark-border rounded-xl p-3.5 space-y-1.5 font-mono text-xs text-gray-300">
+                            <span class="text-gray-500 block text-[10px] uppercase font-bold">Превью:</span>
+                            <div id="discord-live-preview" class="whitespace-pre-line text-xs"></div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Existing Patches & Deletion -->
+                    <div class="crest-border p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-dark-border pb-3">
+                            <h3 class="text-sm font-mono font-bold text-white uppercase flex items-center gap-2">
+                                <i class="fa-solid fa-trash-can text-red-400"></i> Управление опубликованными патчами
+                            </h3>
+                            <span id="admin-patches-count" class="text-xs font-mono px-2 py-0.5 rounded bg-dark-base text-gold-400">0 шт.</span>
+                        </div>
+                        <div id="admin-patches-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                            <!-- Items with delete button -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Settings & Bug moderation -->
+                <div class="lg:col-span-5 space-y-8">
+                    
+                    <!-- Faction Links & Game Settings -->
+                    <div class="crest-border p-6 rounded-3xl space-y-4">
+                        <h3 class="text-sm font-mono font-bold text-white uppercase flex items-center gap-2 border-b border-dark-border pb-3">
+                            <i class="fa-solid fa-sliders text-gold-400"></i> Настройки ссылок и сервера
+                        </h3>
+
+                        <form id="admin-links-form" onsubmit="handleAdminLinksSave(event)" class="space-y-3.5 font-mono text-xs">
+                            <div>
+                                <label class="block text-gray-400 mb-1">Ссылка на плейс в Roblox (Кнопка «Играть»)</label>
+                                <input type="url" id="sett-roblox-url" required class="w-full bg-dark-base border border-dark-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                            </div>
+
+                            <div class="p-3 bg-dark-base rounded-xl border border-dark-border space-y-2">
+                                <span class="text-blue-400 font-bold block">Фракция Полиция:</span>
+                                <div>
+                                    <label class="block text-gray-500 mb-0.5">Текст кнопки:</label>
+                                    <input type="text" id="sett-police-label" class="w-full bg-dark-card border border-dark-border rounded-lg p-2 text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-500 mb-0.5">URL перехода (Discord/ВК/Заявка):</label>
+                                    <input type="url" id="sett-police-url" class="w-full bg-dark-card border border-dark-border rounded-lg p-2 text-white">
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-dark-base rounded-xl border border-dark-border space-y-2">
+                                <span class="text-red-400 font-bold block">Фракция Братва:</span>
+                                <div>
+                                    <label class="block text-gray-500 mb-0.5">Текст кнопки:</label>
+                                    <input type="text" id="sett-gang-label" class="w-full bg-dark-card border border-dark-border rounded-lg p-2 text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-500 mb-0.5">URL перехода (Discord/ВК/Беседа):</label>
+                                    <input type="url" id="sett-gang-url" class="w-full bg-dark-card border border-dark-border rounded-lg p-2 text-white">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-400 mb-1">Прямая ссылка на аватарку / лого (URL):</label>
+                                <input type="url" id="sett-avatar-url" placeholder="https://... (оставьте пустым для герба Чебоксар)" class="w-full bg-dark-base border border-dark-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 rounded-xl bg-dark-card hover:bg-dark-hover border border-gold-500/40 text-gold-400 font-bold transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-floppy-disk"></i> Сохранить настройки ссылок
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Moderate Player Bugs & Ideas -->
+                    <div class="crest-border p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-dark-border pb-3">
+                            <h3 class="text-sm font-mono font-bold text-white uppercase flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-gold-400"></i> Модерация обращений
+                            </h3>
+                            <span id="admin-bugs-count" class="text-xs font-mono px-2 py-0.5 rounded bg-dark-base text-gray-400">0 шт.</span>
+                        </div>
+
+                        <div id="admin-bugs-list" class="space-y-3 max-h-96 overflow-y-auto pr-1">
+                            <!-- Bugs with status buttons -->
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="border-t border-dark-border bg-dark-base/80 mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-gray-500">
+            <div class="flex items-center gap-3">
+                <span class="font-crest font-bold text-white text-sm">ЧЕБ РП</span>
+                <span>• Атмосферный RolePlay в Roblox</span>
+            </div>
+
+            <!-- Socials -->
+            <div class="flex items-center gap-3">
+                <a href="https://discord.com" target="_blank" class="w-8 h-8 rounded-lg bg-dark-card hover:bg-dark-hover border border-dark-border text-gray-300 hover:text-white flex items-center justify-center transition-colors">
+                    <i class="fa-brands fa-discord"></i>
+                </a>
+                <a href="https://vk.com" target="_blank" class="w-8 h-8 rounded-lg bg-dark-card hover:bg-dark-hover border border-dark-border text-gray-300 hover:text-white flex items-center justify-center transition-colors">
+                    <i class="fa-brands fa-vk"></i>
+                </a>
+                <a href="https://t.me" target="_blank" class="w-8 h-8 rounded-lg bg-dark-card hover:bg-dark-hover border border-dark-border text-gray-300 hover:text-white flex items-center justify-center transition-colors">
+                    <i class="fa-brands fa-telegram"></i>
+                </a>
+                <button onclick="openAdminPortal()" title="Вход в управление" class="w-8 h-8 rounded-lg bg-dark-card hover:bg-dark-hover border border-dark-border text-gray-400 hover:text-gold-400 flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-lock text-[10px]"></i>
+                </button>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- ================= JAVASCRIPT SYSTEM ENGINE ================= -->
+    <script>
+        const ADMIN_PASS = 'chipper3210';
+
+        // Initial default configs
+        const DEFAULT_SETTINGS = {
+            robloxUrl: 'https://www.roblox.com',
+            policeLabel: 'Спецсвязь Полиции (Вступить)',
+            policeUrl: 'https://discord.com',
+            gangLabel: 'Связь с Братвой (Вступить)',
+            gangUrl: 'https://discord.com',
+            avatarUrl: ''
+        };
+
+        // Local Storage State
+        let settings = JSON.parse(localStorage.getItem('chebrp_settings')) || DEFAULT_SETTINGS;
+        let patches = JSON.parse(localStorage.getItem('chebrp_patches')) || [];
+        let playerBugs = JSON.parse(localStorage.getItem('chebrp_bugs')) || [];
+        let isAdminLoggedIn = sessionStorage.getItem('chebrp_admin_auth') === 'true';
+
+        // --- TOAST ALERTS ---
+        function notify(msg, type = 'gold') {
+            const box = document.getElementById('toast-box');
+            const toast = document.createElement('div');
+            
+            let border = 'border-gold-500/50';
+            let icon = 'fa-circle-check text-gold-400';
+            if (type === 'error') {
+                border = 'border-red-500/50';
+                icon = 'fa-triangle-exclamation text-red-400';
+            } else if (type === 'discord') {
+                border = 'border-indigo-500/50';
+                icon = 'fa-brands fa-discord text-indigo-400';
+            }
+
+            toast.className = `crest-border ${border} px-4 py-3 rounded-xl flex items-center gap-3 text-xs font-mono text-white shadow-2xl pointer-events-auto transform translate-y-3 opacity-0 transition-all duration-200`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-sm"></i> <span>${msg}</span>`;
+
+            box.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-3', 'opacity-0'), 15);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-3');
+                setTimeout(() => toast.remove(), 250);
+            }, 3200);
+        }
+
+        // --- ASYNC CONFIRMATION MODAL ---
+        let confirmResolver = null;
+        function customConfirm(title, desc) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-desc').textContent = desc;
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            return new Promise((resolve) => {
+                confirmResolver = resolve;
+            });
+        }
+
+        function resolveConfirm(result) {
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            if (confirmResolver) {
+                confirmResolver(result);
+                confirmResolver = null;
+            }
+        }
+
+        // --- TAB ROUTING ---
+        function openTab(tabId) {
+            if (tabId === 'admin' && !isAdminLoggedIn) {
+                openAdminPortal();
+                return;
+            }
+
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+            document.getElementById(`view-${tabId}`).classList.add('active');
+
+            // Header state
+            ['main', 'bugs', 'admin'].forEach(id => {
+                const btn = document.getElementById(`btn-tab-${id}`);
+                if (btn) {
+                    if (id === tabId) {
+                        btn.classList.add('text-white', 'bg-dark-card', 'border-gold-500/30');
+                        btn.classList.remove('text-gray-400');
+                    } else {
+                        btn.classList.remove('text-white', 'bg-dark-card', 'border-gold-500/30');
+                        btn.classList.add('text-gray-400');
+                    }
+                }
+            });
+
+            if (tabId === 'main') renderPatches();
+            if (tabId === 'bugs') renderPublicBugs();
+            if (tabId === 'admin') renderAdminView();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToUpdates() {
+            openTab('main');
+            const el = document.getElementById('updates-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- DEDICATED ADMIN PORTAL & IN-PAGE MODAL ---
+        function openAdminPortal() {
+            if (isAdminLoggedIn) {
+                openTab('admin');
+                return;
+            }
+
+            const modal = document.getElementById('admin-login-modal');
+            const input = document.getElementById('admin-modal-password-input');
+            const err = document.getElementById('admin-login-error');
+            
+            if (err) err.classList.add('hidden');
+            if (input) input.value = '';
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                if (input) input.focus();
+            }, 100);
+        }
+
+        function closeAdminLoginModal() {
+            const modal = document.getElementById('admin-login-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function submitAdminPassword(e) {
+            if (e) e.preventDefault();
+            const input = document.getElementById('admin-modal-password-input');
+            const err = document.getElementById('admin-login-error');
+            const pass = input ? input.value.trim() : '';
+
+            if (pass === ADMIN_PASS) {
+                isAdminLoggedIn = true;
+                sessionStorage.setItem('chebrp_admin_auth', 'true');
+                closeAdminLoginModal();
+                notify('Доступ предоставлен! Добро пожаловать, создатель.');
+                openTab('admin');
+            } else {
+                if (err) err.classList.remove('hidden');
+                if (input) {
+                    input.classList.add('border-red-500');
+                    setTimeout(() => input.classList.remove('border-red-500'), 1500);
+                    input.select();
+                }
+                notify('Неверный пароль доступа!', 'error');
+            }
+        }
+
+        function adminLogout() {
+            isAdminLoggedIn = false;
+            sessionStorage.removeItem('chebrp_admin_auth');
+            notify('Вы вышли из панели управления.');
+            openTab('main');
+        }
+
+        // --- RENDERING PATCHES ON MAIN PAGE ---
+        function renderPatches() {
+            const container = document.getElementById('patches-container');
+            container.innerHTML = '';
+
+            if (patches.length === 0) {
+                // High aesthetic empty placeholder (No fake clutter)
+                container.innerHTML = `
+                    <div class="crest-border p-8 rounded-2xl text-center space-y-3">
+                        <div class="w-12 h-12 rounded-xl bg-gold-500/10 text-gold-400 mx-auto flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-scroll"></i>
+                        </div>
+                        <h4 class="text-base font-crest font-bold text-white">Обновлений пока нет</h4>
+                        <p class="text-xs text-gray-400 font-mono max-w-md mx-auto">
+                            Команда разработчиков активно трудится над улучшением карты и скриптов. Следите за анонсами здесь и в Discord!
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            patches.forEach(patch => {
+                const card = document.createElement('div');
+                card.className = 'crest-border p-5 sm:p-6 rounded-2xl space-y-4 hover:border-gold-500/40 transition-all';
+
+                const pointsList = patch.points.map(pt => `
+                    <li class="flex items-start gap-2.5 text-xs font-mono text-gray-300">
+                        <span class="text-gold-400 mt-0.5">•</span>
+                        <span>${escapeHtml(pt)}</span>
+                    </li>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-dark-border pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-gold-500/15 text-gold-400 border border-gold-500/30">
+                                ${escapeHtml(patch.tag)}
+                            </span>
+                            <h3 class="text-sm sm:text-base font-crest font-bold text-white">${escapeHtml(patch.version)}</h3>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[11px] font-mono text-gray-500">${patch.date}</span>
+                            <button onclick="copyPatchAsDiscord('${patch.id}')" class="px-3 py-1 rounded-xl bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/40 text-[11px] font-mono text-indigo-300 hover:text-white transition-all flex items-center gap-1.5 shadow-sm" title="Скопировать готовый текст патча для Discord канала">
+                                <i class="fa-brands fa-discord"></i> Скопировать для Discord
+                            </button>
+                        </div>
+                    </div>
+
+                    <ul class="space-y-2">
+                        ${pointsList}
+                    </ul>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- DISCORD MARKDOWN COPY FUNCTIONALITY ---
+        function formatPatchForDiscord(patch) {
+            const bullets = patch.points.map(p => `• ${p}`).join('\n');
+            return `📢 **ОБНОВЛЕНИЕ // ЧЕБ РП**\n` +
+                   `📦 **${patch.version}** | [${patch.tag}]\n` +
+                   `📅 *Дата:* ${patch.date}\n` +
+                   `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                   `${bullets}\n` +
+                   `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                   `🎮 *Приятной игры на сервере Чеб РП!*`;
+        }
+
+        function copyPatchAsDiscord(patchId) {
+            const patch = patches.find(p => p.id === patchId);
+            if (!patch) return;
+            const text = formatPatchForDiscord(patch);
+            copyTextToClipboard(text);
+            notify('Патч скопирован в формате Discord!', 'discord');
+        }
+
+        function copyAdminDiscordDraft() {
+            const text = document.getElementById('discord-draft-text').value;
+            if (!text.trim()) {
+                notify('Текст анонса пуст!', 'error');
+                return;
+            }
+            copyTextToClipboard(text);
+            notify('Текст объявления скопирован для Discord!', 'discord');
+        }
+
+        function loadPatchIntoDiscordDrafter() {
+            const select = document.getElementById('discord-patch-select');
+            const patchId = select.value;
+            if (!patchId) return;
+
+            const patch = patches.find(p => p.id === patchId);
+            if (!patch) return;
+
+            const formatted = formatPatchForDiscord(patch);
+            document.getElementById('discord-draft-text').value = formatted;
+            updateDiscordLivePreview();
+            notify('Данные патча загружены в драфтер!');
+        }
+
+        function updateDiscordLivePreview() {
+            const text = document.getElementById('discord-draft-text').value;
+            document.getElementById('discord-live-preview').textContent = text || 'Текст анонса появится здесь...';
+        }
+
+        // --- PUBLIC BUG & SUGGESTION REPORTING ---
+        function handlePublicBugSubmit(e) {
+            e.preventDefault();
+            const nick = document.getElementById('pbug-nick').value.trim();
+            const category = document.getElementById('pbug-category').value;
+            const title = document.getElementById('pbug-title').value.trim();
+            const desc = document.getElementById('pbug-desc').value.trim();
+
+            const newReport = {
+                id: 'bug-' + Date.now(),
+                nick,
+                category,
+                title,
+                desc,
+                status: 'На рассмотрении',
+                date: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+            };
+
+            playerBugs.unshift(newReport);
+            saveData();
+            e.target.reset();
+            renderPublicBugs();
+            notify('Обращение принято и передано разработчикам!');
+        }
+
+        function renderPublicBugs() {
+            const container = document.getElementById('public-bugs-list');
+            container.innerHTML = '';
+
+            document.getElementById('bugs-stat-count').textContent = playerBugs.length;
+            document.getElementById('nav-bugs-badge').textContent = playerBugs.filter(b => b.status !== 'Исправлено').length;
+
+            if (playerBugs.length === 0) {
+                container.innerHTML = `
+                    <div class="crest-border p-6 rounded-2xl text-center text-xs font-mono text-gray-500">
+                        Обращений пока нет. Вы можете стать первым, кто предложит крутую идею!
+                    </div>
+                `;
+                return;
+            }
+
+            playerBugs.forEach(b => {
+                const item = document.createElement('div');
+                item.className = 'crest-border p-4 rounded-xl space-y-2';
+
+                let statusColor = 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30';
+                if (b.status === 'В работе') statusColor = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30';
+                if (b.status === 'Исправлено') statusColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+                if (b.status === 'Отклонено') statusColor = 'bg-red-500/10 text-red-400 border-red-500/30';
+
+                item.innerHTML = `
+                    <div class="flex items-center justify-between text-[11px] font-mono">
+                        <span class="text-gold-400 font-semibold">${escapeHtml(b.category)}</span>
+                        <span class="px-2 py-0.5 rounded-full border ${statusColor}">${b.status}</span>
+                    </div>
+                    <div class="text-xs font-bold text-white">${escapeHtml(b.title)}</div>
+                    <p class="text-[11px] text-gray-400 font-mono leading-relaxed">${escapeHtml(b.desc)}</p>
+                    <div class="pt-1 flex items-center justify-between text-[10px] font-mono text-gray-500">
+                        <span>От: <strong>${escapeHtml(b.nick)}</strong></span>
+                        <span>${b.date}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // --- ADMIN VIEW & OPERATIONS ---
+        function renderAdminView() {
+            // Fill Links form
+            document.getElementById('sett-roblox-url').value = settings.robloxUrl;
+            document.getElementById('sett-police-label').value = settings.policeLabel;
+            document.getElementById('sett-police-url').value = settings.policeUrl;
+            document.getElementById('sett-gang-label').value = settings.gangLabel;
+            document.getElementById('sett-gang-url').value = settings.gangUrl;
+            document.getElementById('sett-avatar-url').value = settings.avatarUrl || '';
+
+            // Render admin patch dropdown
+            const patchSelect = document.getElementById('discord-patch-select');
+            patchSelect.innerHTML = '<option value="">-- Выберите патч для быстрой вставки --</option>';
+            patches.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = `${p.version} (${p.date})`;
+                patchSelect.appendChild(opt);
+            });
+
+            // Render admin patches deletion list
+            const pList = document.getElementById('admin-patches-list');
+            pList.innerHTML = '';
+            document.getElementById('admin-patches-count').textContent = `${patches.length} шт.`;
+
+            if (patches.length === 0) {
+                pList.innerHTML = '<div class="text-xs text-gray-500 font-mono">Нет активных патчей на сайте.</div>';
+            } else {
+                patches.forEach(p => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center justify-between p-2.5 rounded-xl bg-dark-base border border-dark-border text-xs font-mono';
+                    row.innerHTML = `
+                        <div>
+                            <span class="text-white font-bold">${escapeHtml(p.version)}</span>
+                            <span class="text-gray-500 text-[10px] block">${p.tag} • ${p.date}</span>
+                        </div>
+                        <button onclick="deletePatchPrompt('${p.id}')" class="px-2.5 py-1 rounded bg-red-950/60 hover:bg-red-900 border border-red-800 text-red-300 transition-colors">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    `;
+                    pList.appendChild(row);
+                });
+            }
+
+            // Render admin player bugs moderation list
+            const bList = document.getElementById('admin-bugs-list');
+            bList.innerHTML = '';
+            document.getElementById('admin-bugs-count').textContent = `${playerBugs.length} шт.`;
+
+            if (playerBugs.length === 0) {
+                bList.innerHTML = '<div class="text-xs text-gray-500 font-mono">Нет обращений от игроков.</div>';
+            } else {
+                playerBugs.forEach(b => {
+                    const item = document.createElement('div');
+                    item.className = 'p-3 rounded-xl bg-dark-base border border-dark-border space-y-2 text-xs font-mono';
+                    item.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="text-gold-400 font-bold">${escapeHtml(b.title)}</span>
+                            <span class="text-[10px] text-gray-400">${b.status}</span>
+                        </div>
+                        <p class="text-[11px] text-gray-300">${escapeHtml(b.desc)}</p>
+                        <div class="flex items-center justify-between pt-1">
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeBugStatus('${b.id}', 'В работе')" class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 text-[10px]">В работе</button>
+                                <button onclick="changeBugStatus('${b.id}', 'Исправлено')" class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px]">Исправлено</button>
+                                <button onclick="changeBugStatus('${b.id}', 'Отклонено')" class="px-2 py-0.5 rounded bg-dark-card text-gray-400 border border-dark-border text-[10px]">Отклонить</button>
+                            </div>
+                            <button onclick="deleteBugReport('${b.id}')" class="text-red-400 hover:text-red-300 p-1">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    bList.appendChild(item);
+                });
+            }
+
+            updateDiscordLivePreview();
+        }
+
+        // --- ADMIN SUBMISSIONS ---
+        function handleAdminPatchSubmit(e) {
+            e.preventDefault();
+            const version = document.getElementById('ap-version').value.trim();
+            const tag = document.getElementById('ap-tag').value;
+            const pointsRaw = document.getElementById('ap-points').value.trim();
+
+            const pointsArray = pointsRaw.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+
+            const newPatch = {
+                id: 'patch-' + Date.now(),
+                version,
+                tag,
+                points: pointsArray,
+                date: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+            };
+
+            patches.unshift(newPatch);
+            saveData();
+            e.target.reset();
+            renderAdminView();
+            notify('Патч опубликован на главной!');
+        }
+
+        async function deletePatchPrompt(patchId) {
+            const confirmed = await customConfirm('Удалить этот патч?', 'Патч пропадет со страницы обновлений.');
+            if (confirmed) {
+                patches = patches.filter(p => p.id !== patchId);
+                saveData();
+                renderAdminView();
+                notify('Патч удален');
+            }
+        }
+
+        function handleAdminLinksSave(e) {
+            e.preventDefault();
+            settings.robloxUrl = document.getElementById('sett-roblox-url').value.trim();
+            settings.policeLabel = document.getElementById('sett-police-label').value.trim();
+            settings.policeUrl = document.getElementById('sett-police-url').value.trim();
+            settings.gangLabel = document.getElementById('sett-gang-label').value.trim();
+            settings.gangUrl = document.getElementById('sett-gang-url').value.trim();
+            settings.avatarUrl = document.getElementById('sett-avatar-url').value.trim();
+
+            saveData();
+            applySiteSettings();
+            notify('Настройки сайта успешно сохранены!');
+        }
+
+        function changeBugStatus(id, newStatus) {
+            const b = playerBugs.find(item => item.id === id);
+            if (b) {
+                b.status = newStatus;
+                saveData();
+                renderAdminView();
+                notify(`Статус изменен на "${newStatus}"`);
+            }
+        }
+
+        async function deleteBugReport(id) {
+            const confirmed = await customConfirm('Удалить обращение?', 'Запись будет удалена.');
+            if (confirmed) {
+                playerBugs = playerBugs.filter(b => b.id !== id);
+                saveData();
+                renderAdminView();
+                notify('Обращение удалено');
+            }
+        }
+
+        // --- APPLY GLOBAL SETTINGS TO DOM ---
+        function applySiteSettings() {
+            document.getElementById('header-play-link').href = settings.robloxUrl || 'https://www.roblox.com';
+            document.getElementById('hero-play-link').href = settings.robloxUrl || 'https://www.roblox.com';
+
+            document.getElementById('label-police-link').textContent = settings.policeLabel;
+            document.getElementById('btn-police-link').href = settings.policeUrl;
+
+            document.getElementById('label-gang-link').textContent = settings.gangLabel;
+            document.getElementById('btn-gang-link').href = settings.gangUrl;
+
+            // Avatars
+            const navImg = document.getElementById('nav-avatar-img');
+            const navFallback = document.getElementById('nav-avatar-fallback');
+            const heroImg = document.getElementById('hero-crest-img');
+            const heroFallback = document.getElementById('hero-crest-fallback');
+
+            if (settings.avatarUrl) {
+                navImg.src = settings.avatarUrl;
+                navImg.classList.remove('hidden');
+                navFallback.classList.add('hidden');
+
+                heroImg.src = settings.avatarUrl;
+                heroImg.classList.remove('hidden');
+                heroFallback.classList.add('hidden');
+            } else {
+                showDefaultCrest();
+            }
+        }
+
+        function showDefaultCrest() {
+            document.getElementById('nav-avatar-img').classList.add('hidden');
+            document.getElementById('nav-avatar-fallback').classList.remove('hidden');
+            document.getElementById('hero-crest-img').classList.add('hidden');
+            document.getElementById('hero-crest-fallback').classList.remove('hidden');
+        }
+
+        function saveData() {
+            localStorage.setItem('chebrp_settings', JSON.stringify(settings));
+            localStorage.setItem('chebrp_patches', JSON.stringify(patches));
+            localStorage.setItem('chebrp_bugs', JSON.stringify(playerBugs));
+        }
+
+        function copyTextToClipboard(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Initialize application
+        window.addEventListener('DOMContentLoaded', () => {
+            applySiteSettings();
+            renderPatches();
+            renderPublicBugs();
+        });
+    </script>
+</body>
+</html>
